@@ -8,17 +8,25 @@ void initRTC(void)
   if (! rtc.isrunning())
   {
     // If the RTC is not running because it has seen power down
-    err = err + B1;
+    err = err | B1;
     // following line sets the RTC to the date & time 
     // this sketch was compiled
     rtc.adjust(DateTime(__DATE__, __TIME__));
+  }
+  else
+  {
+    err = err & B11111110;
   }
 
   if (rtc.oscstopflag())
   {
     // If the RTC has had problems with the oscillator
     // See OSF on page 11 of DS1338 datasheet for details
-    err = err + B10;
+    err = err | B10;
+  }
+  else
+  {
+    err = err & B11111101;
   }
 
   if (err)
