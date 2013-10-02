@@ -28,6 +28,11 @@ void initRTC(void)
     lcd.print("E");
     lcd.print(err);
   }
+  else
+  {
+    lcd.setCursor(17, 0);
+    lcd.print("   ");
+  }
 
   // Initialize the internal RTC
   rtc_clock.init();
