@@ -44,9 +44,28 @@ void initRTC(void)
 
   // Initialize the internal RTC
   rtc_clock.init();
+  // Start the second interrupt
+  //NVIC_EnableIRQ(RTC_IRQn);
+  //RTC_EnableIt(RTC, RTC_IER_SECEN);
   // Read the current time from DS1338
   DateTime now = rtc.now();
   // Update time and date of internal RTC
   rtc_clock.set_time(now.hour(), now.minute(), now.second());
   rtc_clock.set_date(now.day(), now.month(), now.year());
+  // Attach an interrupt function for every second tick
+  rtc_clock.attachsec(secondInterrupt);
+}
+
+void secondInterrupt(void)
+{
+  //uint32_t ul_status = rtc_clock.rtc_get_status(RTC);
+  digitalWrite(13, ledOn?HIGH:LOW); //Turn the LED on or off, depending on if ledOn is true or false
+  ledOn = ledOn?false:true; //Toggle between false and true
+  /* Second increment interrupt */
+  //if (RTC_SR_SEC)
+  //{
+    //digitalWrite(13, digitalRead(13)?LOW:HIGH);
+  //  RTC_SR_SEC = 0;
+    //rtc_clock.rtc_clear_status(RTC, RTC_SCCR_SECCLR);
+  //}
 }
