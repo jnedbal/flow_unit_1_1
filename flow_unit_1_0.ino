@@ -9,6 +9,8 @@
 #include <LiquidCrystal.h>
 // include the library for using timers.
 #include <DueTimer.h>
+// the NVRAM communicates using SPI, so include the library:
+#include <SPI.h>
 
 /************************/
 /* Initialize libraries */
@@ -30,8 +32,14 @@ LiquidCrystal lcd(14, 17, 15, 18, 16, 19);
 // Days of the week
 char* daynames[]={"Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"};
 // Error vector
-byte err;
+byte err = 0;
 byte t;
+
+// Event counter
+unsigned long event = 0;
+// Event address
+unsigned long Eaddr = 0x100;
+
 
 // counting index
 int i;
@@ -53,6 +61,8 @@ byte serlen = 0;
 
 void setup()
 {
+  // Initialize error. Create an error character
+  initError();
   // Start serial communication of programming port
   Serial.begin(115200);
   // Initialize the LCD
@@ -63,18 +73,22 @@ void setup()
   Timer3.attachInterrupt(printTime).setFrequency(1).start();
   pinMode(13, OUTPUT);
   digitalWrite(13, LOW);
-  Serial.println(__DATE__);
-  Serial.println(__TIME__);
-  lcd.setCursor(0, 1);
-  lcd.print(__TIME__);
-  lcd.setCursor(0, 2);
-  lcd.print(__DATE__);
+  initNVRAM();
+  delay(100);
+  testNVRAM();
+  //Serial.println(__DATE__);
+  //Serial.println(__TIME__);
+  //lcd.setCursor(0, 1);
+  //lcd.print(__TIME__);
+  //lcd.setCursor(0, 2);
+  //lcd.print(__DATE__);
 }
 
 void loop() {
 
   //printTime();
   rs232loop();
+  testNVRAM();
   //digitalWrite(13, digitalRead(13)?LOW:HIGH);
   //t++;
   //Serial.print(t, DEC);

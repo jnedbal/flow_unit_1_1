@@ -61,37 +61,44 @@ void rs232loop(void)
         serlen = 0;
       break;
 
-      /* if the command is D (68 in ASCII) for DAC */
+      /* if the command is T (84 in ASCII) for Time update */
       case 84:
-        char ctime[8];
-        char cdate[11];
-        for(i = 2; i < 10; i++)  // loop through first bytes 3 to 9 of the array
-        {
-          ctime[i - 2] = (char) serialbuffer[i];
-        }
-//        lcd.setCursor(0, 1);
-//        lcd.print(ctime);
-        for(i = 10; i < serlen; i++)  // loop through first bytes 3 to 9 of the array
-        {
-          cdate[i - 10] = (char) serialbuffer[i];
-        }
-//        lcd.setCursor(0, 2);
-//        lcd.print(cdate);
-//        delay(1000);
-//        Serial.print(ctime);
-//        Serial.print(cdate);
-//        Serial.write(serialbuffer, 21);
-//        Serial.print(__TIME__);
-//        Serial.write(sizeof(ctime));
-        rtc.adjust(DateTime(cdate, ctime));
-        DateTime now = rtc.now();
-        // Update time and date of internal RTC
-        rtc_clock.set_time(now.hour(), now.minute(), now.second());
-        rtc_clock.set_date(now.day(), now.month(), now.year());
-        checkSum();
-        Sin = 0;
-        serlen = 0;
-      break;
+        setTimeDate();
+        break;
     }
   }
 }
+
+void setTimeDate()
+{
+  char ctime[8];
+  char cdate[11];
+  // load bytes 3 to 9 containing current time into ctime
+  for(i = 2; i < 10; i++)
+  {
+    ctime[i - 2] = (char) serialbuffer[i];
+  }
+  // load bytes 10 to 20 containing current date into cdate
+  for(i = 10; i < serlen; i++)  // loop through bytes 3 to 9 of the array
+  {
+    cdate[i - 10] = (char) serialbuffer[i];
+  }
+  // Update the external RTC
+  rtc.adjust(DateTime(cdate, ctime));
+  // Recall the time from the external RTC
+  DateTime now = rtc.now();
+  // Update time and date of internal RTC
+  rtc_clock.set_time(now.hour(), now.minute(), now.second());
+  rtc_clock.set_date(now.day(), now.month(), now.year());
+  // Update the oscillator stop flag to 0.
+  // It requires setting bit 5 in register 0x07 to zero.
+  rtc._writeRegister(0x07, rtc._readRegister(0x07) & B11011111);
+  // Make sure external RTC is not giving errors
+  RTCerrorCheck();
+  // Return checksum
+  checkSum();
+  Sin = 0;
+  serlen = 0;
+}
+
+

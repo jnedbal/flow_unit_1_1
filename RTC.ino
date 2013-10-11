@@ -5,42 +5,6 @@ void initRTC(void)
   rtc.begin();  // Start communication with DS1338
   // Check if RTC is running
 
-  if (! rtc.isrunning())
-  {
-    // If the RTC is not running because it has seen power down
-    err = err | B1;
-    // following line sets the RTC to the date & time 
-    // this sketch was compiled
-    rtc.adjust(DateTime(__DATE__, __TIME__));
-  }
-  else
-  {
-    err = err & B11111110;
-  }
-
-  if (rtc.oscstopflag())
-  {
-    // If the RTC has had problems with the oscillator
-    // See OSF on page 11 of DS1338 datasheet for details
-    err = err | B10;
-  }
-  else
-  {
-    err = err & B11111101;
-  }
-
-  if (err)
-  {
-    // If error has occurred, print it on the display
-    lcd.setCursor(17, 0);
-    lcd.print("E");
-    lcd.print(err);
-  }
-  else
-  {
-    lcd.setCursor(17, 0);
-    lcd.print("   ");
-  }
 
   // Initialize the internal RTC
   rtc_clock.init();
@@ -68,4 +32,33 @@ void secondInterrupt(void)
   //  RTC_SR_SEC = 0;
     //rtc_clock.rtc_clear_status(RTC, RTC_SCCR_SECCLR);
   //}
+}
+
+void RTCerrorCheck(void)
+{
+  if (! rtc.isrunning())
+  {
+    // If the RTC is not running because it has seen power down
+    err = err | B1;
+    // following line sets the RTC to the date & time 
+    // this sketch was compiled
+    rtc.adjust(DateTime(__DATE__, __TIME__));
+  }
+  else
+  {
+    err = err & B11111110;
+  }
+
+  if (rtc.oscstopflag())
+  {
+    // If the RTC has had problems with the oscillator
+    // See OSF on page 11 of DS1338 datasheet for details
+    err = err | B10;
+  }
+  else
+  {
+    err = err & B11111101;
+  }
+  // Update the error message on the display 
+  displayError();
 }
