@@ -12,6 +12,18 @@
 // the NVRAM communicates using SPI, so include the library:
 #include <SPI.h>
 
+
+/************************/
+/*  #define Directives  */
+/************************/
+
+// Error vector as the 16th byte of the Event vector
+#define err Evector[15]
+// Event 1 vector as the 13th byte of the Event vector
+#define ev1 Evector[12]
+// Event 2 vector as the 14th byte of the Event vector
+#define ev2 Evector[13]
+
 /************************/
 /* Initialize libraries */
 /************************/
@@ -31,14 +43,22 @@ LiquidCrystal lcd(14, 17, 15, 18, 16, 19);
 
 // Days of the week
 char* daynames[]={"Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"};
-// Error vector
-byte err = 0;
+// Old error vector
+byte olderr;
 byte t;
 
+/* Variables for NVRAM */
 // Event counter
-unsigned long event = 0;
+unsigned long Ecount = 0;
 // Event address
 unsigned long Eaddr = 0x100;
+// Event vector
+byte Evector[24];
+
+// LCD lines data storage
+//byte LCDdata[80];
+//byte LCDnew[80];
+//byte LCDindex;
 
 
 // counting index
@@ -58,6 +78,10 @@ byte serlen = 0;
 /* Define constants */
 /********************/
 
+/* Constants for NVRAM */
+const byte writeInstr = 0x02;
+const byte readInstr = 0x03;
+/* End of constants for NVRAM */
 
 void setup()
 {
@@ -69,19 +93,18 @@ void setup()
   initLCD();
   // Initialize the RTCs
   initRTC();
-  // Attach an interrupt updating the clock
-  Timer3.attachInterrupt(printTime).setFrequency(1).start();
   pinMode(13, OUTPUT);
   digitalWrite(13, LOW);
+  // Initialize non-volatile RAM
   initNVRAM();
   delay(100);
   testNVRAM();
-  //Serial.println(__DATE__);
-  //Serial.println(__TIME__);
-  //lcd.setCursor(0, 1);
-  //lcd.print(__TIME__);
-  //lcd.setCursor(0, 2);
-  //lcd.print(__DATE__);
+  // Attach an interrupt updating the clock
+  Timer3.attachInterrupt(printTime).setFrequency(1).start();
+  // Call reset event
+  ev2 = ev2 | B10000000;
+  callEvent();
+  ev2 = ev2 & B01111111;
 }
 
 void loop() {

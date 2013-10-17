@@ -72,12 +72,12 @@ void printTime(void)
   lcd.print((curdate >> 12) & B1111);
   lcd.print((curdate >> 8) & B1111);
 
-  
-  byte HH10 = rtc_clock.get_hours();
-  byte HH01 = HH10 % 10;
-  HH10 = HH10 / 10;
-  byte MM10 = rtc_clock.get_minutes();
-  byte MM01 = HH10 % 10;
-  HH10 = HH10 / 10;
+  //lcd.setCursor(0, 0);
+  //lcd.print(LCD0);
 
+
+}
+
+void updateLCD(void)
+{
 }
