@@ -56,9 +56,9 @@ unsigned long Eaddr = 0x100;
 byte Evector[24];
 
 // LCD lines data storage
-//byte LCDdata[80];
-//byte LCDnew[80];
-//byte LCDindex;
+byte LCDdata[80];
+byte LCDnew[80];
+byte LCDindex;
 
 
 // counting index
@@ -82,6 +82,10 @@ byte serlen = 0;
 const byte writeInstr = 0x02;
 const byte readInstr = 0x03;
 /* End of constants for NVRAM */
+
+/* Constants for LCD */
+// lookup table for HEX numbers
+const byte HEXASCII[16] = {48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 65, 66, 67, 68, 59, 70};
 
 void setup()
 {
