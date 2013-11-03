@@ -56,41 +56,54 @@ void initLCD(void)
 
 void printTime(void)
 {
-  lcd.setCursor(0, 0);
+  //lcd.setCursor(0, 0);
   uint32_t curtime = rtc_clock.current_time();
-  lcd.print((curtime >> 20) & B11);
+  //lcd.print((curtime >> 20) & B11);
   loadLCDdata(0, HEXASCII[(curtime >> 20) & B11]);
-  lcd.print((curtime >> 16) & B1111);
+  //lcd.print((curtime >> 16) & B1111);
   loadLCDdata(1, HEXASCII[(curtime >> 16) & B1111]);
-  lcd.print(":");
-  lcd.print((curtime >> 12) & B111);
+  //lcd.print(":");
+  //lcd.print((curtime >> 12) & B111);
   loadLCDdata(3, HEXASCII[(curtime >> 12) & B111]);
-  lcd.print((curtime >> 8) & B1111);
+  //lcd.print((curtime >> 8) & B1111);
   loadLCDdata(4, HEXASCII[(curtime >> 8) & B1111]);
-  lcd.print(":");
-  lcd.print((curtime >> 4) & B111);
+  //lcd.print(":");
+  //lcd.print((curtime >> 4) & B111);
   loadLCDdata(6, HEXASCII[(curtime >> 4) & B111]);
-  lcd.print((curtime) & B1111);
+  //lcd.print((curtime) & B1111);
   loadLCDdata(7, HEXASCII[(curtime) & B1111]);
-  lcd.print(" ");
+  //lcd.print(" ");
   uint32_t curdate = rtc_clock.current_date();
-  lcd.print((curdate >> 28) & B11);
-  lcd.print((curdate >> 24) & B1111);
-  lcd.print("/");
-  lcd.print((curdate >> 20) & B1);
-  lcd.print((curdate >> 16) & B1111);
-  lcd.print("/");
-  lcd.print((curdate >> 12) & B1111);
-  lcd.print((curdate >> 8) & B1111);
+  //lcd.print((curdate >> 28) & B11);
+  loadLCDdata(9, HEXASCII[(curdate >> 28) & B11]);
+  //lcd.print((curdate >> 24) & B1111);
+  loadLCDdata(10, HEXASCII[(curdate >> 24) & B1111]);
+  //lcd.print("/");
+  //lcd.print((curdate >> 20) & B1);
+  loadLCDdata(12, HEXASCII[(curdate >> 20) & B1]);
+  //lcd.print((curdate >> 16) & B1111);
+  loadLCDdata(13, HEXASCII[(curdate >> 16) & B1111]);
+  //lcd.print("/");
+  //lcd.print((curdate >> 12) & B1111);
+  loadLCDdata(15, HEXASCII[(curdate >> 12) & B1111]);
+  //lcd.print((curdate >> 8) & B1111);
+  loadLCDdata(16, HEXASCII[(curdate >> 8) & B1111]);
 
   //lcd.setCursor(0, 0);
   //lcd.print(LCD0);
-
+  updateLCD();
 
 }
 
 void updateLCD(void)
 {
+  while (LCDindex > 0)
+  {
+    byte tmpIn = LCDindex - 1;
+    lcd.setCursor(LCDnew[tmpIn] % 20, LCDnew[tmpIn] / 20);
+    lcd.write(LCDdata[LCDnew[tmpIn]]);
+    LCDindex--;
+  }
 }
 
 // Function updates LCDdata register, LCDnew

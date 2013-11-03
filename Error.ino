@@ -38,13 +38,19 @@ void displayError(void)
   if (err)
   {
     // If error has occurred, print it on the display
-    lcd.setCursor(17, 0);
-    lcd.write(byte(0));
-    lcd.print(err, HEX);
+    loadLCDdata(17, byte(0));
+    loadLCDdata(18, HEXASCII[(err >> 4) & B1111]);
+    loadLCDdata(19, HEXASCII[err & B1111]);
+//    lcd.setCursor(17, 0);
+//    lcd.write(byte(0));
+//    lcd.print(err, HEX);
   }
   else
   {
-    lcd.setCursor(17, 0);
-    lcd.print("   ");
+//    lcd.setCursor(17, 0);
+//    lcd.print("   ");
+    loadLCDdata(17, byte(32));
+    loadLCDdata(18, byte(32));
+    loadLCDdata(19, byte(32));
   }
 }

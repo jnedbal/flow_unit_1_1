@@ -100,10 +100,15 @@ void testNVRAM(void)
   SPI.transfer(4, (byte) ((addr >> 8) & 0xFF), SPI_CONTINUE);
   SPI.transfer(4, (byte) (addr & 0xFF), SPI_CONTINUE);
   byte answer = SPI.transfer(4, 0x00);
-  lcd.setCursor(2, 2);
-  lcd.print((byte) answer, HEX);
-  lcd.setCursor(5, 2);
-  lcd.print((byte) 0x34, HEX);
+  // had to comment out, otherwise the LCD buffer filled up too quickly
+  //loadLCDdata(42, HEXASCII[(answer >> 4) & B1111]);
+  //loadLCDdata(43, HEXASCII[(answer) & B1111]);
+  //loadLCDdata(45, HEXASCII[(0x34 >> 4) & B1111]);
+  //loadLCDdata(46, HEXASCII[(0x34) & B1111]);
+  //lcd.setCursor(2, 2);
+  //lcd.print((byte) answer, HEX);
+  //lcd.setCursor(5, 2);
+  //lcd.print((byte) 0x34, HEX);
   //lcd.setCursor(2, 3);
   //lcd.print((byte) ((addr >> 8) & 0xFF), HEX);
   delay(10);
