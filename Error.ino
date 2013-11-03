@@ -15,7 +15,7 @@
 
 void initError(void)
 {
-  Evector[15] = 0xFF;
+  err = 0x00;
   createErrorChar();
 }
 

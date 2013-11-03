@@ -89,12 +89,13 @@ const byte HEXASCII[16] = {48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 65, 66, 67, 6
 
 void setup()
 {
+  // Initialize the LCD
+  initLCD();
   // Initialize error. Create an error character
   initError();
   // Start serial communication of programming port
   Serial.begin(115200);
-  // Initialize the LCD
-  initLCD();
+
   // Initialize the RTCs
   initRTC();
   pinMode(13, OUTPUT);

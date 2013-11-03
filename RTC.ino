@@ -18,6 +18,8 @@ void initRTC(void)
   rtc_clock.set_date(now.day(), now.month(), now.year());
   // Attach an interrupt function for every second tick
   rtc_clock.attachsec(secondInterrupt);
+  // Make sure external RTC is not giving errors
+  RTCerrorCheck();
 }
 
 void secondInterrupt(void)
