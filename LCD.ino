@@ -45,10 +45,10 @@ void initLCD(void)
   pinMode(18, OUTPUT);    // LCD D6
   pinMode(19, OUTPUT);    // LCD D7
   
-  loadLCDdata(2, 58);  // Add a colon between hour and minute
-  loadLCDdata(5, 58);  // Add a colon between minute and second
-  loadLCDdata(11, 47);  // Add a colon between hour and minute
-  loadLCDdata(14, 47);  // Add a colon between minute and second
+  loadLCDdata(2, 58);   // Add a colon between hour and minute
+  loadLCDdata(5, 58);   // Add a colon between minute and second
+  loadLCDdata(11, 47);  // Add a slash between day and month
+  loadLCDdata(14, 47);  // Add a slash between month and year
   
   // set up the LCD's number of columns and rows: 
   lcd.begin(20, 4);

@@ -10,8 +10,12 @@
 // 00000001:  External RTC was not running, power
 //            failure. Update the time.
 // 00000010:  External RTC encountered an oscillator
-//            top. Some problem with power supply,
+//            stop. Some problem with power supply,
 //            noise or board layout. Update the time.
+// 00000100:  NVRAM does not hold expected values in
+//            first four bytes, suspected loss of 
+//            power supply. All settings and logs lost.
+
 
 void initError(void)
 {

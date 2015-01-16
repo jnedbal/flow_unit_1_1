@@ -8,7 +8,7 @@ void checkSum(void)
   {
     cksum ^= serialbuffer[i];
   }
-  Serial.write(cksum);
+  SerialUSB.write(cksum);
   /* Octave code to calculate the checksum
   A=[repmat('0', 5, 1) dec2bin(double('Dqwer'))]
   W='        ';V=repmat(false,1,8);u=0;for i = 1:8;for j=1:5; u=u+1;V(i)=xor(V(i), logical(bin2dec(A(u))));end;end;for i=1:8; W(i)=dec2bin(V(i));end;W=bin2dec(W);char(W)
@@ -26,12 +26,12 @@ void rs232loop(void)
   /* The remaining bytes are the data                    */
   /*******************************************************/
 
-  if (!Serial.available() > 0)
+  if (!SerialUSB.available() > 0)
   {
     return;
   }
   // Get incoming byte and store it in the serial buffer.
-  serialbuffer[Sin] = Serial.read();
+  serialbuffer[Sin] = SerialUSB.read();
   // Increment the serial buffer index.
   Sin++;
   // Read the very first byte of the serial buffer.
@@ -45,24 +45,18 @@ void rs232loop(void)
   {
     switch (serialbuffer[1])      // the second byte contains the command
     {
-      /* if the command is D (68 in ASCII) for DAC */
+      /* if the command is G (68 in ASCII) for Get time */
       case 68:
-        digitalWrite(13, HIGH);      // assert ~SYNC pin low to make DA converter listen
-        for(i = 2; i < serlen; i++)  // loop through last 4 bytes of the array
-        {
-          //SPI.transfer(serialbuffer[i]);// send over SPI byte by byte to the DA converter
-        }
+        getTimeDate();
+        break;
 
-        delay(10);
-        digitalWrite(13, LOW);     // assert ~SYNC pin high to finish transfer
-        checkSum();
+      /* if the command is I (70 in ASCII) for ID */
+      case 70:
+        getID();
+        break;
 
-        Sin = 0;
-        serlen = 0;
-      break;
-
-      /* if the command is T (84 in ASCII) for Time update */
-      case 84:
+      /* if the command is S (83 in ASCII) for Set time */
+      case 83:
         setTimeDate();
         break;
     }
@@ -84,7 +78,7 @@ void setTimeDate()
     cdate[i - 10] = (char) serialbuffer[i];
   }
   // Update the external RTC
-  rtc.adjust(DateTime(cdate, ctime));
+  rtc.adjust(DateTime(__DATE__, __TIME__));
   // Recall the time from the external RTC
   DateTime now = rtc.now();
   // Update time and date of internal RTC
@@ -99,6 +93,42 @@ void setTimeDate()
   checkSum();
   Sin = 0;
   serlen = 0;
+  for (i=0; i<300; i++)
+  {
+    digitalWrite(2, HIGH);
+    delayMicroseconds(100);
+    digitalWrite(2, LOW);
+    delayMicroseconds(100);
+  }
+
 }
 
+void getTimeDate(void)
+{
+  checkSum();
+  Sin = 0;
+  serlen = 0;
+  uint32_t curtime = rtc_clock.current_time();
+  uint32_t curdate = rtc_clock.current_date();
+  uint8_t buffer[6];
+  buffer[0] = (curtime >> 16) & 0xFF;
+  buffer[1] = (curtime >> 8) & 0xFF;
+  buffer[2] = curtime & 0xFF;
+  buffer[3] = (curdate >> 24) & 0xFF;
+  buffer[4] = (curdate >> 16) & 0xFF;
+  buffer[5] = (curdate >> 8) & 0xFF;
+  SerialUSB.write(buffer, 6);
+}
 
+void getID(void)
+{
+  checkSum();
+  Sin = 0;
+  serlen = 0;
+  SerialUSB.write(sizeof(ID));
+  SerialUSB.write(sizeof(__DATE__));
+  SerialUSB.write(sizeof(__TIME__));
+  SerialUSB.print(ID);
+  SerialUSB.print(__DATE__);
+  SerialUSB.print(__TIME__);
+}

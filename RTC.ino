@@ -2,10 +2,8 @@
 
 void initRTC(void)
 {
-  rtc.begin();  // Start communication with DS1338
-  // Check if RTC is running
-
-
+  // Start communication with DS1338
+  rtc.begin();
   // Initialize the internal RTC
   rtc_clock.init();
   // Start the second interrupt
@@ -13,7 +11,7 @@ void initRTC(void)
   //RTC_EnableIt(RTC, RTC_IER_SECEN);
   // Read the current time from DS1338
   DateTime now = rtc.now();
-  // Update time and date of internal RTC
+  // Update time and date of the internal RTC
   rtc_clock.set_time(now.hour(), now.minute(), now.second());
   rtc_clock.set_date(now.day(), now.month(), now.year());
   // Attach an interrupt function for every second tick
@@ -42,9 +40,8 @@ void RTCerrorCheck(void)
   {
     // If the RTC is not running because it has seen power down
     err = err | B1;
-    // following line sets the RTC to the date & time 
-    // this sketch was compiled
-    rtc.adjust(DateTime(__DATE__, __TIME__));
+    // Store event
+    //callEvent();
   }
   else
   {
@@ -56,6 +53,8 @@ void RTCerrorCheck(void)
     // If the RTC has had problems with the oscillator
     // See OSF on page 11 of DS1338 datasheet for details
     err = err | B10;
+    // Store event
+    //callEvent();
   }
   else
   {
