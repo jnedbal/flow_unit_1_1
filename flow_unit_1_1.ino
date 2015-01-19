@@ -4,7 +4,7 @@
 // include the library for internal RTC
 #include <rtc_clock.h>
 // include the library to communicate with DS1338
-#include <RTCdue.h>
+#include <RTClib.h>
 // include the liquid crystal library code:
 #include <LiquidCrystal.h>
 // include the library for using timers.

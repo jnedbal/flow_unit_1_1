@@ -2,6 +2,8 @@
 
 void initRTC(void)
 {
+  // Start I2C communication on bus Wire1
+  Wire1.begin();
   // Start communication with DS1338
   rtc.begin();
   // Initialize the internal RTC
@@ -48,7 +50,7 @@ void RTCerrorCheck(void)
     err = err & B11111110;
   }
 
-  if (rtc.oscstopflag())
+  /*if (rtc.oscstopflag())
   {
     // If the RTC has had problems with the oscillator
     // See OSF on page 11 of DS1338 datasheet for details
@@ -59,7 +61,7 @@ void RTCerrorCheck(void)
   else
   {
     err = err & B11111101;
-  }
+  }*/
   // Update the error message on the display 
   displayError();
 }

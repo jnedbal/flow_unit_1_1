@@ -45,14 +45,24 @@ void rs232loop(void)
   {
     switch (serialbuffer[1])      // the second byte contains the command
     {
-      /* if the command is G (68 in ASCII) for Get time */
-      case 68:
+      /* if the command is G (71 in ASCII) for Get time */
+      case 71:
         getTimeDate();
         break;
 
-      /* if the command is I (70 in ASCII) for ID */
-      case 70:
+      /* if the command is I (73 in ASCII) for ID */
+      case 73:
         getID();
+        break;
+
+      /* if the command is L (76 in ASCII) for LCD */
+      case 76:
+        getLCDcontrastBrightness();
+        break;
+
+      /* if the command is C (67 in ASCII) for LCD */
+      case 67:
+        setLCDcontrastBrightness();
         break;
 
       /* if the command is S (83 in ASCII) for Set time */
@@ -65,8 +75,13 @@ void rs232loop(void)
 
 void setTimeDate()
 {
-  char ctime[8];
-  char cdate[11];
+  // Return checksum
+  checkSum();
+  Sin = 0;
+  serlen = 0;
+  // Arrays to hold strings of time and date
+  char ctime[8];     // time (HH:MM:SS)
+  char cdate[11];   // date (mmm dd yyyy)
   // load bytes 3 to 9 containing current time into ctime
   for(i = 2; i < 10; i++)
   {
@@ -78,7 +93,7 @@ void setTimeDate()
     cdate[i - 10] = (char) serialbuffer[i];
   }
   // Update the external RTC
-  rtc.adjust(DateTime(__DATE__, __TIME__));
+  rtc.adjust(DateTime(cdate, ctime));
   // Recall the time from the external RTC
   DateTime now = rtc.now();
   // Update time and date of internal RTC
@@ -86,21 +101,16 @@ void setTimeDate()
   rtc_clock.set_date(now.day(), now.month(), now.year());
   // Update the oscillator stop flag to 0.
   // It requires setting bit 5 in register 0x07 to zero.
-  rtc._writeRegister(0x07, rtc._readRegister(0x07) & B11011111);
+  rtc.writenvram(0x07, rtc.readnvram(0x07) & B11011111);
   // Make sure external RTC is not giving errors
   RTCerrorCheck();
-  // Return checksum
-  checkSum();
-  Sin = 0;
-  serlen = 0;
-  for (i=0; i<300; i++)
-  {
-    digitalWrite(2, HIGH);
-    delayMicroseconds(100);
-    digitalWrite(2, LOW);
-    delayMicroseconds(100);
-  }
 
+  // Update the event register 2 to say that time has changed
+  ev2 |= 0b00100000;
+  // Store event
+  callEvent();
+  // Update the event register to say that time NOT changed anymore
+  ev2 &= 0b11011111;
 }
 
 void getTimeDate(void)
@@ -131,4 +141,32 @@ void getID(void)
   SerialUSB.print(ID);
   SerialUSB.print(__DATE__);
   SerialUSB.print(__TIME__);
+}
+
+void getLCDcontrastBrightness(void)
+{
+  checkSum();
+  Sin = 0;
+  serlen = 0;
+  retrieveConstant(0x07, 0x04);
+  SerialUSB.write(NVbuffer, 4);
+}
+
+void setLCDcontrastBrightness(void)
+{
+  // Return checksum and reset serial transfer
+  checkSum();
+  Sin = 0;
+  serlen = 0;
+  // Store last four bytes into NVRAM buffer
+  for (i = 0; i < 4; i++)
+  {
+    NVbuffer[i] = serialbuffer[i + 2];
+  }
+  // Save four bytes into address 0x07 in the NVRAM
+  storeConstant(0x07, 0x04);
+  // Set the brightness
+  setLCDbrightness(word(NVbuffer[0], NVbuffer[1]));
+  // Set the contrast
+  setLCDcontrast(word(NVbuffer[2], NVbuffer[3]));
 }
