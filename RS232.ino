@@ -69,16 +69,28 @@ void rs232loop(void)
       case 83:
         setTimeDate();
         break;
+
+      /* if the command is 1 (49 in ASCII) for 1st filter packet */
+      case 49:
+        filterPacket();
+        break;
+
+      /* if the command is 2 (50 in ASCII) for 2nd filter packet */
+      case 50:
+        filterPacket();
+        break;
+
+      /* if the command is 3 (51 in ASCII) for 3rd filter packet */
+      case 51:
+        filterPacket();
+        break;
+        
     }
   }
 }
 
 void setTimeDate()
 {
-  // Return checksum
-  checkSum();
-  Sin = 0;
-  serlen = 0;
   // Arrays to hold strings of time and date
   char ctime[8];     // time (HH:MM:SS)
   char cdate[11];   // date (mmm dd yyyy)
@@ -111,13 +123,15 @@ void setTimeDate()
   callEvent();
   // Update the event register to say that time NOT changed anymore
   ev2 &= 0b11011111;
+
+  // Return checksum
+  checkSum();
+  Sin = 0;
+  serlen = 0;
 }
 
 void getTimeDate(void)
 {
-  checkSum();
-  Sin = 0;
-  serlen = 0;
   uint32_t curtime = rtc_clock.current_time();
   uint32_t curdate = rtc_clock.current_date();
   uint8_t buffer[6];
@@ -127,14 +141,22 @@ void getTimeDate(void)
   buffer[3] = (curdate >> 24) & 0xFF;
   buffer[4] = (curdate >> 16) & 0xFF;
   buffer[5] = (curdate >> 8) & 0xFF;
+
+  // Return checksum
+  checkSum();
+  Sin = 0;
+  serlen = 0;
+
   SerialUSB.write(buffer, 6);
 }
 
 void getID(void)
 {
+  // Return checksum
   checkSum();
   Sin = 0;
   serlen = 0;
+
   SerialUSB.write(sizeof(ID));
   SerialUSB.write(sizeof(__DATE__));
   SerialUSB.write(sizeof(__TIME__));
@@ -145,19 +167,18 @@ void getID(void)
 
 void getLCDcontrastBrightness(void)
 {
+  retrieveConstant(0x07, 0x04);
+
+  // Return checksum
   checkSum();
   Sin = 0;
   serlen = 0;
-  retrieveConstant(0x07, 0x04);
+
   SerialUSB.write(NVbuffer, 4);
 }
 
 void setLCDcontrastBrightness(void)
 {
-  // Return checksum and reset serial transfer
-  checkSum();
-  Sin = 0;
-  serlen = 0;
   // Store last four bytes into NVRAM buffer
   for (i = 0; i < 4; i++)
   {
@@ -169,4 +190,20 @@ void setLCDcontrastBrightness(void)
   setLCDbrightness(word(NVbuffer[0], NVbuffer[1]));
   // Set the contrast
   setLCDcontrast(word(NVbuffer[2], NVbuffer[3]));
+
+  // Return checksum and reset serial transfer
+  checkSum();
+  Sin = 0;
+  serlen = 0;
 }
+
+void filterPacket(void)
+{
+  
+  // Return checksum and reset serial transfer
+  checkSum();
+  Sin = 0;
+  serlen = 0;
+}
+
+
