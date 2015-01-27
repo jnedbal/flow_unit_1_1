@@ -83,7 +83,7 @@
 // 0x04-0x06 : event address
 // 0x07-0x08 : LCD brightness
 // 0x09-0x0A : LCD contrast
-
+// 0x0B-0xC2 : filter wheel setting
 
 void initNVRAM(void)
 {
@@ -97,8 +97,8 @@ void initNVRAM(void)
   //  0x02    0b01010101     0x55
   //  0x03    0b10101010     0xAA
   // If they don't it means that the memory has lost power,
-  // indicated by error 0b100 
-  retrieveConstant(0x00, 0x04);
+  // indicated by error 0b100
+  retrieveConstant(0x00, 0x00, 0x00, 0x04);
   if ((NVbuffer[0] != 0x00) || (NVbuffer[1] != 0xFF) ||
       (NVbuffer[2] != 0x55) || (NVbuffer[3] != 0xAA))
   {
@@ -110,7 +110,7 @@ void initNVRAM(void)
     NVbuffer[1] = 0xFF;
     NVbuffer[2] = 0x55;
     NVbuffer[3] = 0xAA;
-    storeConstant(0x00, 0x04);
+    storeConstant(0x00, 0x00, 0x00, 0x04);
     // Store event
     //callEvent();
   }
@@ -123,23 +123,23 @@ void initNVRAM(void)
   displayError();
 
   // Scan the NVRAM to find the last stored event in the log
-  // start from address 0x100, and increment by 0x18.
+  // start from address 0x200, and increment by 0x18.
   // Each time read two bytes, combine them into a word
   // Check that the word has increased by one fromt he last one
   // If it did not increase by one, you know that the end of
   // the log has been reached
   // If there is NVRAM error, there is no point of testing the memory
-  // Start with Event 0 and Eaddr 0x100
+  // Start with Event 0 and Eaddr 0x200
   if ((err >> 2) & 0x01)
   {
     // Event counter
     Ecount = 0;
     // Event address
-    Eaddr = 0x100;
+    Eaddr = 0x200;
   }
   else
   {
-    uint32_t address = 0x100;
+    uint32_t address = 0x200;
     uint16_t eventNrLast;
     uint16_t eventNr;
     boolean OK = true;
@@ -179,7 +179,7 @@ void initNVRAM(void)
   Eaddr = Eaddr + 0x10;
   if (Eaddr == 0x20000)
   {
-    Eaddr = 0x100;
+    Eaddr = 0x200;
   }
   unsigned long addr = 0x01A6BA;
   SPI.transfer(4, writeInstr, SPI_CONTINUE);
@@ -216,9 +216,9 @@ void callEvent(void)
 {
   // Make sure the event address does not overflow the 
   // 1 Mbit memory space. Update the event address.
-  if (Eaddr > 0x1FFE9)  // Don't overflow the memory
+  if (Eaddr > 0x1FFFF)  // Don't overflow the memory
   {
-    Eaddr = 0x100;
+    Eaddr = 0x200;
   }
   //Serial.print("Ecount: ");
   //Serial.println(Ecount);
@@ -263,14 +263,14 @@ void callEvent(void)
 // addr, is the address at which the writing should start
 // nrBytes, how many bytes need to be written minus ONE
 // data from a byte array called "NVbuffer" are transferred
-void storeConstant(byte address, byte nrBytes)
+void storeConstant(byte add1, byte add2, byte add3, byte nrBytes)
 {
   // Write instruction
   SPI.transfer(4, writeInstr, SPI_CONTINUE);
   // Pass on address
-  SPI.transfer(4, 0x00, SPI_CONTINUE);
-  SPI.transfer(4, 0x00, SPI_CONTINUE);
-  SPI.transfer(4, address, SPI_CONTINUE);
+  SPI.transfer(4, add1, SPI_CONTINUE);
+  SPI.transfer(4, add2, SPI_CONTINUE);
+  SPI.transfer(4, add3, SPI_CONTINUE);
   // Pass on the data byte-by-byte, don't transfer the last byte
   for (i = 0; i < nrBytes; i++)
   {
@@ -285,14 +285,14 @@ void storeConstant(byte address, byte nrBytes)
 // addr, is the address at which the reading should start
 // nrBytes, how many bytes need to be read minus ONE
 // data from the memory are stored into  byte array called "NVbuffer"
-void retrieveConstant(byte address, byte nrBytes)
+void retrieveConstant(byte add1, byte add2, byte add3, byte nrBytes)
 {
   // Write instruction
   SPI.transfer(4, readInstr, SPI_CONTINUE);
   // Pass on address
-  SPI.transfer(4, 0x00, SPI_CONTINUE);
-  SPI.transfer(4, 0x00, SPI_CONTINUE);
-  SPI.transfer(4, address, SPI_CONTINUE);
+  SPI.transfer(4, add1, SPI_CONTINUE);
+  SPI.transfer(4, add2, SPI_CONTINUE);
+  SPI.transfer(4, add3, SPI_CONTINUE);
   // Pass on the data byte-by-byte, don't transfer the last byte
   for (i = 0; i < nrBytes; i++)
   {

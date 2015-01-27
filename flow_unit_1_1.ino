@@ -62,7 +62,7 @@ byte t;
 // Event counter
 unsigned long Ecount = 0;
 // Event address
-unsigned long Eaddr = 0x100;
+unsigned long Eaddr = 0x200;
 // Event vector
 byte Evector[24];
 
@@ -72,7 +72,7 @@ byte LCDnew[80];
 byte LCDindex;
 
 // NVRAM transfer buffer
-byte NVbuffer[8];
+byte NVbuffer[256];
 
 // counting index
 int i;
@@ -80,12 +80,14 @@ int i;
 boolean ledOn = true;
 
 // 34 byte long buffer storing serial data
-byte serialbuffer[102];
+byte serialbuffer[64];
 // Serial FIFO index
 byte Sin = 0;
-// Serial transfer length (up to 32 bytes) plus 2.
+// Serial transfer length (up to 62 bytes) plus 2.
 // For transfer of 4 bytes, serlen should be 4+2=6.
 byte serlen = 0;
+// Serial packet index
+byte packetIn = 0;
 
 /********************/
 /* Define constants */

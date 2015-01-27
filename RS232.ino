@@ -70,21 +70,15 @@ void rs232loop(void)
         setTimeDate();
         break;
 
-      /* if the command is 1 (49 in ASCII) for 1st filter packet */
-      case 49:
-        filterPacket();
+      /* if the command is p (112 in ASCII) to store NVRAM packet */
+      case 112:
+        packetStore();
         break;
 
-      /* if the command is 2 (50 in ASCII) for 2nd filter packet */
-      case 50:
-        filterPacket();
-        break;
-
-      /* if the command is 3 (51 in ASCII) for 3rd filter packet */
-      case 51:
-        filterPacket();
-        break;
-        
+      /* if the command is P (80 in ASCII) to send NVRAM Packet */
+      case 80:
+        packetSend();
+        break;        
     }
   }
 }
@@ -167,7 +161,7 @@ void getID(void)
 
 void getLCDcontrastBrightness(void)
 {
-  retrieveConstant(0x07, 0x04);
+  retrieveConstant(0x00, 0x00, 0x07, 0x04);
 
   // Return checksum
   checkSum();
@@ -185,7 +179,7 @@ void setLCDcontrastBrightness(void)
     NVbuffer[i] = serialbuffer[i + 2];
   }
   // Save four bytes into address 0x07 in the NVRAM
-  storeConstant(0x07, 0x04);
+  storeConstant(0x00, 0x00, 0x07, 0x04);
   // Set the brightness
   setLCDbrightness(word(NVbuffer[0], NVbuffer[1]));
   // Set the contrast
@@ -197,13 +191,37 @@ void setLCDcontrastBrightness(void)
   serlen = 0;
 }
 
-void filterPacket(void)
+// Function to store packets with filter wheel settings
+void packetStore(void)
 {
-  
+  // Data comes in four packet of maximum 64 bytes, they need
+  // to be stored into NVbuffer and stored into the NVRAM
+
+  // store up to 60 bytes into NVbuffer
+  for (i = 4; i < serialbuffer[0]; i++)
+  {
+    NVbuffer[i - 4] = serialbuffer[i];
+  }
+
+  // Store into NVRAM
+  storeConstant(0x00, serialbuffer[2], serialbuffer[3], serialbuffer[0] - 4);
+
   // Return checksum and reset serial transfer
   checkSum();
   Sin = 0;
   serlen = 0;
 }
+
+// Function to send a packet with filter wheel settings
+void packetSend(void)
+{
+  retrieveConstant(0x00, serialbuffer[2], serialbuffer[3], serialbuffer[4]);
+  // Return checksum and reset serial transfer
+  checkSum();
+  Sin = 0;
+  serlen = 0;
+  SerialUSB.write(NVbuffer, serialbuffer[4]);
+}
+
 
 

@@ -29,7 +29,7 @@ void initPWM(void)
     NVbuffer[2] = (byte) ((defaultContrast >> 8) & 0xFF);
     NVbuffer[3] = (byte) (defaultContrast & 0xFF);
     // Store values starting at LCDaddress 
-    storeConstant(LCDaddress, 0x04);
+    storeConstant(0x00, 0x00, LCDaddress, 0x04);
     // Update the event register to say that brightness and contrast has changed
     ev2 |= 0b00010000;
     // Store event
@@ -40,7 +40,7 @@ void initPWM(void)
   else
   {
     // Retrieve stored values from NVRAM memory starting at LCDaddress
-    retrieveConstant(LCDaddress, 0x04);
+    retrieveConstant(0x00, 0x00, LCDaddress, 0x04);
   }
   // Set the brightness
   setLCDbrightness(word(NVbuffer[0], NVbuffer[1]));
