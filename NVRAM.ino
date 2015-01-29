@@ -7,12 +7,12 @@
 // Bytes 5 - 7 are the time
 // Bytes 8 - 11 are milliseconds since the last restart
 // Byte 12 events 1:
-//  7: updated servo 1 (filter wheel 1)
-//  6: updated servo 2 (filter wheel 2)
-//  5: updated servo 3
-//  4: updated servo 4
-//  3: updated servo 1 look-up table
-//  2: updated servo 2 look-up table
+//  7: reserved
+//  6: reserved
+//  5: reserved
+//  4: reserved
+//  3: updated servo 1 (filter wheel 1) look-up table
+//  2: updated servo 2 (filter wheel 2) look-up table
 //  1: updated servo 3 look-up table
 //  0: updated servo 4 look-up table
 // Byte 13 events 2:
@@ -38,7 +38,7 @@
 //  6:  reserved
 //  5:  reserved
 //  4:  reserved
-//  3:  reserved
+//  3:  Don't know which filter is in position
 //  2:  NVRAM does not hold expected values in first four bytes,
 //            suspected loss of power. All settings and logs lost.
 //  1:  External RTC encountered an oscillator stop. Some problem with
@@ -148,7 +148,7 @@ void initNVRAM(void)
     //Serial.println(Eaddr);
     //Serial.print("Event: ");
     //Serial.println(eventNr);
-    while (OK | (address > 0x1FFE9)) // (0x20000-0x17)
+    while (OK | (address > 0x1FFFF)) // (0x20000-0x17)
     {
       address += 0x18;
       eventNrLast = eventNr;
@@ -169,7 +169,13 @@ void initNVRAM(void)
     Ecount = eventNrLast + 1;
     // Event address
     Eaddr = address;
+
+    // Check how full the RAM is
+    loadLCDdata(79, RAMfill[Eaddr / oneNinth]);
   }
+
+  // Create characters to display the filling of the NVRAM
+  createRAMchar();
 }
 
 /* void testNVRAM(void)
@@ -257,7 +263,45 @@ void callEvent(void)
   SPI.transfer(4, Evector[23]);
   Eaddr = Eaddr + 0x18;    // Increment by 24 (DEC) or 0x18 (HEX)
   Ecount = Ecount + 1;
+
+  // Check and display how full the RAM is
+  loadLCDdata(79, RAMfill[Eaddr / oneNinth]);
 }
+
+// Upload a series of characters into the LCD RAM
+// To display the filling of the internal RAM
+// byte 77 ("M") can be used for empty RAM
+// As the RAM fills, the color of the M will get inverted
+void createRAMchar(void)
+{
+  // #   #  0x11  #   #  0x11  #   #  0x11  #   #  0x11
+  // ## ##  0x1B  ## ##  0x1B  ## ##  0x1B  ## ##  0x1B
+  // # # #  0x15  # # #  0x15  # # #  0x15  # # #  0x15
+  // # # #  0x15  # # #  0x15  # # #  0x15  # # #  0x15
+  // #   #  0x11  #   #  0x11  #   #  0x11  #####  0x1F
+  // #   #  0x11  #   #  0x11  #####  0x1F  #####  0x1F
+  // #   #  0x11  #####  0x1F  #####  0x1F  #####  0x1F
+  // #####  0x1F  #####  0x1F  #####  0x1F  #####  0x1F
+  //
+  // #   #  0x11  #   #  0x11  #   #  0x11
+  // ## ##  0x1B  ## ##  0x1B  #####  0x1F
+  // # # #  0x15  #####  0x1F  #####  0x1F
+  // #####  0x1F  #####  0x1F  #####  0x1F
+  // #####  0x1F  #####  0x1F  #####  0x1F
+  // #####  0x1F  #####  0x1F  #####  0x1F
+  // #####  0x1F  #####  0x1F  #####  0x1F
+  // #####  0x1F  #####  0x1F  #####  0x1F
+  //
+  uint8_t RAMchar[8] = {0x11, 0x1B, 0x15, 0x15, 0x11, 0x11, 0x11, 0x1F};
+  for (i = 1; i < 8; i++)
+  {
+    lcd.createChar(i, RAMchar);   // Create a character in the LCD RAM
+    RAMchar[7 - i] = 0x1F;        // Fill in another line from the bottom
+  }
+
+  // Display the character representing the memory fullness on the LCD
+}
+
 
 // This function is called to store a constant into the memory
 // addr, is the address at which the writing should start

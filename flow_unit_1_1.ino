@@ -28,6 +28,13 @@
 #define ev1 Evector[12]
 // Event 2 vector as the 14th byte of the Event vector
 #define ev2 Evector[13]
+// Servo 1&2 position
+#define fw12 Evector[16]
+// Servo 3&4 position
+#define fw34 Evector[17]
+
+// Dividing factor for one ninth of the RAM full
+#define oneNinth 0x38E4
 
 /************************/
 /* Initialize libraries */
@@ -65,14 +72,19 @@ unsigned long Ecount = 0;
 unsigned long Eaddr = 0x200;
 // Event vector
 byte Evector[24];
+// NVRAM transfer buffer
+byte NVbuffer[256];
+// Memory fillup character
+byte RAMfill[] = {0x4D, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0xFF};
+
+
 
 // LCD lines data storage
 byte LCDdata[80];
 byte LCDnew[80];
 byte LCDindex;
 
-// NVRAM transfer buffer
-byte NVbuffer[256];
+
 
 // counting index
 int i;
@@ -88,6 +100,40 @@ byte Sin = 0;
 byte serlen = 0;
 // Serial packet index
 byte packetIn = 0;
+
+// *************************
+// Filter position variables
+// *************************
+// Filter wheel address 
+uint16_t servoAddress[4];
+// Number of active filter wheels
+byte servoCount;
+// Active filter wheels
+byte servoActive[4];
+// Number of characters in filter wheel names
+byte servoNameNrChar[4];
+// Filter wheel names
+byte servoName[4][3];
+// Filter wheel name LCD cursor position
+byte servoNameLCD[] = {20, 0, 0, 0};
+
+
+// Number of filters per servo
+byte filterCount[4];
+// Filter positions
+uint16_t filterPosition[4][10];
+// Maximum number of characters in filter names for each wheel
+byte filterNameMaxChar[4];
+// Number of characters in filter names for each wheel
+byte filterNameNrChar[4][10];
+// Filter names
+byte filterName[4][10][2];
+// Selected filter wheel
+byte filterActive[4];
+// Default filter wheel
+byte filterDefault[4];
+// Filter position name LCD cursor position
+byte filterNameLCD[4];
 
 /********************/
 /* Define constants */
@@ -106,7 +152,7 @@ void setup()
 {
   // Start serial communication of programming port
   Serial.begin(115200);
-  SerialUSB.begin(115200);
+  SerialUSB.begin(0);
   // Initialize the LCD
   initLCD();
   // Initialize error. Create an error character
@@ -126,10 +172,13 @@ void setup()
   initPWM();
   // Attach an interrupt updating the clock
   Timer3.attachInterrupt(printTime).setFrequency(1).start();
+  // Set the servos
+  servoSetting();
   // Call reset event
   ev2 = ev2 | B10000000;
   callEvent();
   ev2 = ev2 & B01111111;
+  
 }
 
 void loop() {
@@ -160,4 +209,32 @@ void loop() {
 //  Serial.print(".");
 //  Serial.println(rtc_clock.get_years());
   //delay(900);
+
+  //delay(10);
+
+
+//  RAMperc = Eaddr / 0x38E4;
+//  if (RAMperc != RAMold)
+//  {
+//    RAMold = RAMperc;
+//    lcd.setCursor(0, 3);
+//    lcd.print(Eaddr, HEX);
+//    lcd.print("  ");
+//    lcd.print(RAMperc, HEX);
+//    lcd.print("  ");
+//    loadLCDdata(79, RAMfill[RAMperc]);
+//    // Display the buffer onto the LCD
+//    updateLCD();     
+//  }
+//
+//    //
+//
+//
+//
+//  Eaddr += 0x18;  
+//  if (Eaddr > 0x1FFFF)  // Don't overflow the memory
+//  {
+//    Eaddr = 0x200;
+//    RAMperc = 0;
+//  }
 }

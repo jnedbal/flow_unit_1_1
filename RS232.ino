@@ -78,7 +78,23 @@ void rs232loop(void)
       /* if the command is P (80 in ASCII) to send NVRAM Packet */
       case 80:
         packetSend();
-        break;        
+        break;
+
+      /* Reset the filter lookup table l (108 in ASCII) */
+      case 108:
+        filterUpdate();
+        break;
+
+      /* if the command is f (102 in ASCII) to set filter position */
+      case 102:
+        filterSet();
+        break;
+
+      /* if the command is F (70 in ASCII) to get filter position */
+      case 70:
+        filterGet();
+        break;
+
     }
   }
 }
@@ -221,6 +237,85 @@ void packetSend(void)
   Sin = 0;
   serlen = 0;
   SerialUSB.write(NVbuffer, serialbuffer[4]);
+}
+
+// Function to send a information about selected filter
+void filterGet(void)
+{
+  // Return checksum and reset serial transfer
+  checkSum();
+  Sin = 0;
+  serlen = 0;
+  //SerialUSB.write(servoCount);
+  // Create a 4 byte array to hold the active filter positions
+  byte sendBuffer[4];
+  for (i = 0; i < servoCount; i++)
+  {
+    sendBuffer[servoActive[i]] = filterActive[i];
+  }
+  // Send to the PC
+  SerialUSB.write(sendBuffer, 4);
+//  SerialUSB.write(servoActive, 4);
+//  SerialUSB.write(filterActive, 4);
+//  SerialUSB.write(filterDefault, 4);
+//  SerialUSB.write(filterActive[0]);
+//  SerialUSB.write(servoActive[0]);
+//  SerialUSB.write(sendBuffer[0]);
+}
+
+// Function to set a filter in a particular position
+void filterSet(void)
+{
+  // serialbuffer[2]:  which wheel is used
+  // serialbuffer[3]:  which position to go to
+  for (i = 0; i < filterNameMaxChar[serialbuffer[2]]; i++)
+  {
+    // Print characters on LCD
+    loadLCDdata(filterNameLCD[serialbuffer[2]] + i, filterName[serialbuffer[2]][serialbuffer[3] - 1][i]);
+  }
+  // Set the active filter position
+  filterActive[serialbuffer[2]] = serialbuffer[3];
+  if (err == 0b00001000)
+  {
+    err &= 0b11110111;
+    for (i = 0; i < servoCount; i++)
+    {
+      if (filterActive[i] == 0)
+      {
+        err |= 0b00001000;
+      }
+    }
+    displayError();
+  }
+
+  // Update the log
+  if (serialbuffer[2] < 2)
+  {
+    fw12 = (filterActive[0] & (filterActive[1] << 4));
+  }
+  else
+  {
+    fw34 = (filterActive[2] & (filterActive[3] << 4));
+  }
+  callEvent();
+  
+  // Display the buffer onto the LCD
+  updateLCD();
+
+  // Return checksum and reset serial transfer
+  checkSum();
+  Sin = 0;
+  serlen = 0;
+}
+
+// Function to update the filter look-up-table
+void filterUpdate(void)
+{
+  servoSetting();
+  // Return checksum and reset serial transfer
+  checkSum();
+  Sin = 0;
+  serlen = 0;
 }
 
 

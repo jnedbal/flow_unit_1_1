@@ -15,7 +15,7 @@
 // 00000100:  NVRAM does not hold expected values in
 //            first four bytes, suspected loss of 
 //            power supply. All settings and logs lost.
-
+// 00001000:  Don't know which filter is in position
 
 void initError(void)
 {
@@ -33,7 +33,7 @@ void createErrorChar(void)
   // # ###  0x17
   // #   #  0x11
   // #####  0x1F
-   uint8_t errorChar[8] = {0x1F, 0x11, 0x17, 0x13, 0x17, 0x11, 0x1F};
+   uint8_t errorChar[8] = {0x1F, 0x11, 0x17, 0x13, 0x17, 0x11, 0x1F, 0x00};
    lcd.createChar(0, errorChar);
 }
 
