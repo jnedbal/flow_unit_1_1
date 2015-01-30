@@ -4,6 +4,18 @@
 // NVRAM to operate the servos correctly, control the servos and
 // display the information on the LCD.
 
+// Initialize the servos
+void initServo(void)
+{
+  // Load the servos
+  servoSetting();
+  // Attach the servos running the filter wheels
+  for (i = 0; i < servoCount; i++)
+  {
+    servos[i].attach(servoAddress[i]);
+  }
+}
+
 void servoSetting(void)
 {
   byte ind = 0;
@@ -245,6 +257,8 @@ void servoSetting(void)
     // Check if the default filter is non-zero
     if (filterDefault[i] > 0)
     {
+      // Move filter wheel to the default position
+      servos[i].writeMicroseconds(filterPosition[i][filterDefault[i] - 1]);
       for (j = 0; j < filterNameMaxChar[i]; j++)
       {
         // Print characters on LCD

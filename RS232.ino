@@ -95,6 +95,16 @@ void rs232loop(void)
         filterGet();
         break;
 
+      /* if the command is g (103 in ASCII) to goto filter position */
+      case 103:
+        filterGoto();
+        break;
+
+      /* if the command is E (69 in ASCII) to get eventNR */
+      case 69:
+        EcountGet();
+        break;
+
     }
   }
 }
@@ -268,6 +278,8 @@ void filterSet(void)
 {
   // serialbuffer[2]:  which wheel is used
   // serialbuffer[3]:  which position to go to
+  // Go to the position
+  servos[serialbuffer[2]].writeMicroseconds(filterPosition[serialbuffer[2]][serialbuffer[3] - 1]);
   for (i = 0; i < filterNameMaxChar[serialbuffer[2]]; i++)
   {
     // Print characters on LCD
@@ -318,5 +330,54 @@ void filterUpdate(void)
   serlen = 0;
 }
 
+// Function to set a filter in a particular position
+void filterGoto(void)
+{
+  // serialbuffer[2]:    which wheel is used
+  // serialbuffer[3-4]:  which position to go to, consists of a 16bit number between 700 and 2300
+  // Go to the position
+  servos[serialbuffer[2]].writeMicroseconds(word(serialbuffer[3], serialbuffer[4]));
+
+  // Delete filter position name from the LCD
+  for (i = 0; i < filterNameMaxChar[serialbuffer[2]]; i++)
+  {
+    // Print characters on LCD
+    loadLCDdata(filterNameLCD[serialbuffer[2]] + i, 32);
+  }
+
+  // Set the active filter position
+  filterActive[serialbuffer[2]] = 0;
+  // Set error on the display as we are moving to arbitrary position
+  err |= 0b00001000;
+  displayError();
+
+  // Update the log
+  if (serialbuffer[2] < 2)
+  {
+    fw12 = (filterActive[0] & (filterActive[1] << 4));
+  }
+  else
+  {
+    fw34 = (filterActive[2] & (filterActive[3] << 4));
+  }
+  callEvent();
+  
+  // Return checksum and reset serial transfer
+  checkSum();
+  Sin = 0;
+  serlen = 0;
+}
+
+// Function to send a information about selected filter
+void EcountGet(void)
+{
+  // Return checksum and reset serial transfer
+  checkSum();
+  Sin = 0;
+  serlen = 0;
+  // Send to the PC
+  SerialUSB.write((byte) (Ecount >> 8) & 0xFF);
+  SerialUSB.write((byte) Ecount & 0xFF);
+}
 
 

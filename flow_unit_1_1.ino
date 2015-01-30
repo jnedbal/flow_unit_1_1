@@ -15,7 +15,8 @@
 #include <Wire.h>
 // PCA9685 PWM driver for the backlight and contrast requires the library
 #include <Adafruit_PWMServoDriver.h>
-
+// Library to operate the servos
+#include <Servo.h> 
 
 /************************/
 /*  #define Directives  */
@@ -52,6 +53,13 @@ LiquidCrystal lcd(14, 17, 15, 18, 16, 19);
 // initialize the library for the PWM driver
 Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver(0x55);
 
+// Initialize the servo library
+Servo servoA;  // Servo 1
+Servo servoB;  // Servo 2
+Servo servoC;  // Servo 3
+Servo servoD;  // Servo 4
+Servo servos[] = {servoA, servoB, servoC, servoD};  // create servo object to control a servo 
+
 /********************/
 /* Define variables */
 /********************/
@@ -85,7 +93,8 @@ byte LCDnew[80];
 byte LCDindex;
 
 
-
+uint32_t servIn;
+uint16_t servPos;
 // counting index
 int i;
 
@@ -171,9 +180,9 @@ void setup()
   // Initialize the PWM
   initPWM();
   // Attach an interrupt updating the clock
-  Timer3.attachInterrupt(printTime).setFrequency(1).start();
+  Timer1.attachInterrupt(printTime).setFrequency(1).start();
   // Set the servos
-  servoSetting();
+  initServo();
   // Call reset event
   ev2 = ev2 | B10000000;
   callEvent();
@@ -185,6 +194,8 @@ void loop() {
 
   //printTime();
   rs232loop();
+
+  
   //testNVRAM();
   //digitalWrite(13, digitalRead(13)?LOW:HIGH);
   //t++;
