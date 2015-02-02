@@ -96,7 +96,7 @@ byte LCDindex;
 uint32_t servIn;
 uint16_t servPos;
 // counting index
-int i;
+uint32_t i;
 
 boolean ledOn = true;
 

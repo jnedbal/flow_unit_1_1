@@ -105,6 +105,11 @@ void rs232loop(void)
         EcountGet();
         break;
 
+      /* if the command is b (98 in ASCII) to bulk transfer all events */
+      case 98:
+        transferEvents();
+        break;
+
     }
   }
 }
@@ -380,4 +385,24 @@ void EcountGet(void)
   SerialUSB.write((byte) Ecount & 0xFF);
 }
 
-
+// Function to send all events in the NVRAM
+void transferEvents(void)
+{
+  // Return checksum and reset serial transfer
+  checkSum();
+  Sin = 0;
+  serlen = 0;
+  // Do the bulk transfer
+    // Write instruction
+  SPI.transfer(4, readInstr, SPI_CONTINUE);
+  // Pass on address
+  SPI.transfer(4, 0x00, SPI_CONTINUE);
+  SPI.transfer(4, 0x00, SPI_CONTINUE);
+  SPI.transfer(4, 0x00, SPI_CONTINUE);
+  // Pass on the data byte-by-byte, don't transfer the last byte
+  for (i = 0x01; i < Eaddr; i++)
+  {
+    SerialUSB.write(SPI.transfer(4, 0x00, SPI_CONTINUE));
+  }
+  SerialUSB.write(SPI.transfer(4, 0x00));
+}
