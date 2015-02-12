@@ -33,6 +33,12 @@
 #define fw12 Evector[16]
 // Servo 3&4 position
 #define fw34 Evector[17]
+// ON/OFF vector as the 19th byte of the Event vector
+#define onoff Evector[18]
+// Fluika pump pressure MSB
+#define fp1 Evector[19]
+// Fluika pump pressure LSB
+#define fp2 Evector[20]
 
 // Dividing factor for one ninth of the RAM full
 #define oneNinth 0x38E4
@@ -184,9 +190,8 @@ void setup()
   // Set the servos
   initServo();
   // Call reset event
-  ev2 = ev2 | B10000000;
+  ev2 |= 0b10000000;
   callEvent();
-  ev2 = ev2 & B01111111;
   
 }
 

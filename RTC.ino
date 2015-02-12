@@ -41,7 +41,8 @@ void RTCerrorCheck(void)
   if (! rtc.isrunning())
   {
     // If the RTC is not running because it has seen power down
-    err = err | B1;
+    err |= 0b00000001;
+    ev2 |= 0b01000000;
     // Store event
     //callEvent();
   }
@@ -54,7 +55,8 @@ void RTCerrorCheck(void)
   {
     // If the RTC has had problems with the oscillator
     // See OSF on page 11 of DS1338 datasheet for details
-    err = err | B10;
+    err |= 0b00000010;
+    ev2 |= 0b01000000;
     // Store event
     //callEvent();
   }

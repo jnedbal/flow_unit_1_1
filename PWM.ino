@@ -73,6 +73,16 @@ void setLCDbrightness(uint16_t brightness)
   //storeConstant(0x52, 0x01);
   NVbuffer[0] = 0x00;
   NVbuffer[1] = 0x00;
+  // store into the event memory
+  if (brightness > 0)
+  {
+    onoff |= 0b10000000;
+  }
+  else
+  {
+    onoff &= 0b01111111;
+  }
+
   //Serial.print("Reset NV buffer");
   //Serial.println(word(NVbuffer[0], NVbuffer[1]));
   //retrieveConstant(0x52, 0x01);

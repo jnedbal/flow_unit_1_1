@@ -7,13 +7,14 @@
 // Initialize the servos
 void initServo(void)
 {
-  // Load the servos
-  servoSetting();
   // Attach the servos running the filter wheels
   for (i = 0; i < servoCount; i++)
   {
     servos[i].attach(servoAddress[i]);
   }
+  // Load the servos
+  servoSetting();
+
 }
 
 void servoSetting(void)
@@ -46,19 +47,18 @@ void servoSetting(void)
   servoCount = ind;    // how many servos are used
   
   // Record the event
-  // Updated filter look up table
-  ev1 = (ev1 & 0b11110000) | NVbuffer[8];
 
-  Serial.print("Active servo: ");
-  Serial.println(servoActive[0], DEC);
-  Serial.print("Active servo: ");
-  Serial.println(servoActive[1], DEC);
-  Serial.print("Active servo: ");
-  Serial.println(servoActive[2], DEC);
-  Serial.print("Active servo: ");
-  Serial.println(servoActive[3], DEC);
-  Serial.print("Number of active servos: ");
-  Serial.println(servoCount, DEC);
+
+//  Serial.print("Active servo: ");
+//  Serial.println(servoActive[0], DEC);
+//  Serial.print("Active servo: ");
+//  Serial.println(servoActive[1], DEC);
+//  Serial.print("Active servo: ");
+//  Serial.println(servoActive[2], DEC);
+//  Serial.print("Active servo: ");
+//  Serial.println(servoActive[3], DEC);
+//  Serial.print("Number of active servos: ");
+//  Serial.println(servoCount, DEC);
 
   // Two bytes for number of filter positions of filter wheels
   // BBBBAAAA, where BBBB is number of positions in wheel 2 and AAAA is number
@@ -88,10 +88,10 @@ void servoSetting(void)
     //   byte 7      filter wheel 4 address MSB
     //   byte 8      filter wheel 4 address LSB
     servoAddress[i] = word(NVbuffer[servoActive[i] * 2], NVbuffer[servoActive[i] * 2 + 1]);
-    Serial.print("Filter address ");
-    Serial.print(servoActive[i] + 1, DEC);
-    Serial.print(": ");
-    Serial.println(servoAddress[i], DEC);
+//    Serial.print("Filter address ");
+//    Serial.print(servoActive[i] + 1, DEC);
+//    Serial.print(": ");
+//    Serial.println(servoAddress[i], DEC);
 
     // How many characters in each filter wheel name (up to 3) combined into one
     // byte (AABBCCDD), AA (filter wheel 4), BB (filter wheel 3), CC (filter
@@ -99,10 +99,10 @@ void servoSetting(void)
     //   byte 10     number of characters in filter wheel names
     // bitshift by value "i * 2" and get the two LSBs
     servoNameNrChar[i] = ((NVbuffer[9] >> (servoActive[i] * 2)) & 0x03);
-    Serial.print("Number of characters in servo ");
-    Serial.print(servoActive[i] + 1, DEC);
-    Serial.print(" name: ");
-    Serial.println(servoNameNrChar[i], DEC);
+//    Serial.print("Number of characters in servo ");
+//    Serial.print(servoActive[i] + 1, DEC);
+//    Serial.print(" name: ");
+//    Serial.println(servoNameNrChar[i], DEC);
 
     // Get the names of the filter wheels
     // Three bytes for name of filter wheel 1
@@ -125,32 +125,32 @@ void servoSetting(void)
     {
       servoName[i][j] = NVbuffer[servoActive[i] * 3 + 10 + j];
     }
-    Serial.print("Servo ");
-    Serial.print(servoActive[i] + 1, DEC);
-    Serial.print(" name: ");
-    Serial.print(servoName[i][0], DEC);
-    Serial.print(servoName[i][1], DEC);
-    Serial.println(servoName[i][2], DEC);
+//    Serial.print("Servo ");
+//    Serial.print(servoActive[i] + 1, DEC);
+//    Serial.print(" name: ");
+//    Serial.print(servoName[i][0], DEC);
+//    Serial.print(servoName[i][1], DEC);
+//    Serial.println(servoName[i][2], DEC);
 
     // 16-bit word for number of filter positions of filter wheels
     // DDDDCCCCBBBBAAAA, where DDDD is number of positions in wheel 4,
     // CCCC is number of positions in wheel 3, BBBB is number of
     // positions in wheel 2 and AAAA is number of positions in wheel 1.
     filterCount[i] = ((numberPos >> (servoActive[i] * 4)) & 0x0F);
-    Serial.print("Number of filters in servo ");
-    Serial.print(servoActive[i] + 1, DEC);
-    Serial.print(": ");
-    Serial.println(filterCount[i], DEC);
+//    Serial.print("Number of filters in servo ");
+//    Serial.print(servoActive[i] + 1, DEC);
+//    Serial.print(": ");
+//    Serial.println(filterCount[i], DEC);
 
     // 16-bit word for default filter position of filter wheels
     // DDDDCCCCBBBBAAAA, where DDDD is the dafault position in wheel 4,
     // CCCC is the default position in wheel 3, BBBB is the default
     // position in wheel 2 and AAAA is the default position in wheel 1.
     filterDefault[i] = ((defaultPos >> (servoActive[i] * 4)) & 0x0F);
-    Serial.print("Default filter in servo ");
-    Serial.print(servoActive[i] + 1, DEC);
-    Serial.print(": ");
-    Serial.println(filterDefault[i], DEC);
+//    Serial.print("Default filter in servo ");
+//    Serial.print(servoActive[i] + 1, DEC);
+//    Serial.print(": ");
+//    Serial.println(filterDefault[i], DEC);
   }
 
 
@@ -193,23 +193,23 @@ void servoSetting(void)
       {
         filterName[i][j][1] = NVbuffer[3 + ind];
       }
-      Serial.print("** Filter wheel: ");
-      Serial.print(servoActive[i] + 1, DEC);
-      Serial.print("; filter position: ");
-      Serial.print(j + 1, DEC);
-      Serial.println(" **");
-      Serial.print("Number of characters in a filter position: ");
-      Serial.println(filterNameNrChar[i][j], DEC);
-      Serial.print("Filter position: ");
-      Serial.println(filterPosition[i][j], DEC);
-      Serial.print("Filter name: ");
-      Serial.print(filterName[i][j][0], DEC);
-      Serial.println(filterName[i][j][1], DEC);
+//      Serial.print("** Filter wheel: ");
+//      Serial.print(servoActive[i] + 1, DEC);
+//      Serial.print("; filter position: ");
+//      Serial.print(j + 1, DEC);
+//      Serial.println(" **");
+//      Serial.print("Number of characters in a filter position: ");
+//      Serial.println(filterNameNrChar[i][j], DEC);
+//      Serial.print("Filter position: ");
+//      Serial.println(filterPosition[i][j], DEC);
+//      Serial.print("Filter name: ");
+//      Serial.print(filterName[i][j][0], DEC);
+//      Serial.println(filterName[i][j][1], DEC);
     }
-    Serial.print("Maximum number of characters in filter name of filter wheel ");
-    Serial.print(servoActive[i] + 1, DEC);
-    Serial.print(": ");
-    Serial.println(filterNameMaxChar[0], DEC);
+//    Serial.print("Maximum number of characters in filter name of filter wheel ");
+//    Serial.print(servoActive[i] + 1, DEC);
+//    Serial.print(": ");
+//    Serial.println(filterNameMaxChar[0], DEC);
   }
 
 
@@ -251,6 +251,10 @@ void servoSetting(void)
     }
   }
 
+  // Set filter position error to zero
+  // Will set it one if any filter is wrong
+  err &= 0b11110111;
+  
   // Check if there are any default filter positions to load
   for (i = 0; i < servoCount; i++)
   {
@@ -278,8 +282,8 @@ void servoSetting(void)
 
   // Record the event
   // New filter positions
-  fw12 = (filterActive[0] & (filterActive[1] << 4));
-  fw34 = (filterActive[2] & (filterActive[3] << 4));
+  fw12 = (filterActive[0] | (filterActive[1] << 4));
+  fw34 = (filterActive[2] | (filterActive[3] << 4));
   callEvent();
 
   // Display the buffer onto the LCD

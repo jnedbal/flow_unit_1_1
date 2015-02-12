@@ -110,6 +110,21 @@ void rs232loop(void)
         transferEvents();
         break;
 
+      /* if the command is e (101 in ASCII) to (e)rase Event memory */
+      case 101:
+        wipeEvents();
+        break;
+
+      /* if the command is D (68 in ASCII) for (D)olomite pump ID*/
+      case 68:
+        pumpID();
+        break;
+
+      /* if the command is d (100 in ASCII) for (d)olomite pump pressure */
+      case 100:
+        pumpPressure();
+        break;
+
     }
   }
 }
@@ -216,6 +231,10 @@ void setLCDcontrastBrightness(void)
   // Set the contrast
   setLCDcontrast(word(NVbuffer[2], NVbuffer[3]));
 
+  // Update the event register
+  ev2 |= 0b00010000;
+  callEvent();
+
   // Return checksum and reset serial transfer
   checkSum();
   Sin = 0;
@@ -300,6 +319,7 @@ void filterSet(void)
       if (filterActive[i] == 0)
       {
         err |= 0b00001000;
+        ev2 |= 0b01000000;
       }
     }
     displayError();
@@ -308,11 +328,11 @@ void filterSet(void)
   // Update the log
   if (serialbuffer[2] < 2)
   {
-    fw12 = (filterActive[0] & (filterActive[1] << 4));
+    fw12 = (filterActive[0] | (filterActive[1] << 4));
   }
   else
   {
-    fw34 = (filterActive[2] & (filterActive[3] << 4));
+    fw34 = (filterActive[2] | (filterActive[3] << 4));
   }
   callEvent();
   
@@ -329,6 +349,8 @@ void filterSet(void)
 void filterUpdate(void)
 {
   servoSetting();
+  // Updated filter look up table
+  ev1 = (ev1 & 0b11110000) | NVbuffer[8];
   // Return checksum and reset serial transfer
   checkSum();
   Sin = 0;
@@ -354,16 +376,18 @@ void filterGoto(void)
   filterActive[serialbuffer[2]] = 0;
   // Set error on the display as we are moving to arbitrary position
   err |= 0b00001000;
+  ev2 |= 0b01000000;
+
   displayError();
 
   // Update the log
   if (serialbuffer[2] < 2)
   {
-    fw12 = (filterActive[0] & (filterActive[1] << 4));
+    fw12 = (filterActive[0] | (filterActive[1] << 4));
   }
   else
   {
-    fw34 = (filterActive[2] & (filterActive[3] << 4));
+    fw34 = (filterActive[2] | (filterActive[3] << 4));
   }
   callEvent();
   
@@ -405,4 +429,64 @@ void transferEvents(void)
     SerialUSB.write(SPI.transfer(4, 0x00, SPI_CONTINUE));
   }
   SerialUSB.write(SPI.transfer(4, 0x00));
+}
+
+// Function to send all events in the NVRAM
+void wipeEvents(void)
+{
+  // Reset the Ecount iindex and the event memory
+  // Event counter
+  Ecount = 0;
+  // Event address
+  Eaddr = 0x200;
+  // Write zeros to the whole of the Event space of the memory
+  // Write instruction
+  SPI.transfer(4, writeInstr, SPI_CONTINUE);
+  // Pass on address
+  SPI.transfer(4, 0x00, SPI_CONTINUE);
+  SPI.transfer(4, 0x02, SPI_CONTINUE);
+  SPI.transfer(4, 0x00, SPI_CONTINUE);
+  for (i = 0x200; i < 0x1FFFF; i++)
+  {
+    SPI.transfer(4, 0x00, SPI_CONTINUE);
+  }
+  SPI.transfer(4, 0x00);
+  // Call an event to get something into the memory
+  callEvent();
+  // Return checksum and reset serial transfer
+  checkSum();
+  Sin = 0;
+  serlen = 0;
+}
+
+// Function to store the Device name and serial number into the NVRAM
+void pumpID(void)
+{
+  // Transfer the 7 bytes to NVbuffer
+  for (i = 0; i < 7; i++)
+  {
+    NVbuffer[i] = serialbuffer[i + 2];
+  }
+  storeConstant(0x00, 0x01, 0x15, 0x07);
+  // Create a pump event
+  ev2 |= 0b00000100;
+  callEvent();
+  // Return checksum and reset serial transfer
+  checkSum();
+  Sin = 0;
+  serlen = 0;
+}
+
+// Function to store the pump pressure into the NVRAM
+void pumpPressure(void)
+{
+  // Create a pump pressure event
+  ev2 |= 0b00000100;
+  fp1 = serialbuffer[2];
+  fp2 = serialbuffer[3];
+  callEvent();
+  // Return checksum and reset serial transfer
+  checkSum();
+  Sin = 0;
+  serlen = 0;
 }

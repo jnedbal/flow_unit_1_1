@@ -21,7 +21,7 @@
 //  5:  updated time
 //  4:  updated backlight and contrast
 //  3:  updated shutters
-//  2:  reserved
+//  2:  command to Fluika pump
 //  1:  reserved
 //  0:  reserved
 // Byte 14 events 3:
@@ -42,7 +42,7 @@
 //  2:  NVRAM does not hold expected values in first four bytes,
 //            suspected loss of power. All settings and logs lost.
 //  1:  External RTC encountered an oscillator stop. Some problem with
-//            power supply, noise or board layout. Update the time.
+//            power supply, noise or board layout. Update the time. (not used)
 //  0:  External RTC was not running, power failure. Update the time.
 // Byte 16 are servos 1 & 2 settings
 //  7:  3 servo 2
@@ -71,19 +71,26 @@
 //  2:  reserved
 //  1:  reserved
 //  0:  reserved
-// Byte 19 - 23 are reserved
+// Bytes 19 & 20 are pump pressure
+// Byte 19
+//  7:  release pressure (1)
+//  6-0: pressure MSB
+// Byte 20
+//  7-0: pressure LSB
+// Byte 21 - 23 are reserved
 
-// The first 256 bytes of the NVRAM are used to store settings 
-// during power outage. The map of this memory spoace follows:
+// The first 512 bytes of the NVRAM are used to store settings 
+// during power outage. The map of this memory space follows:
 
-// 0x00      : memory check byte 0: 0x00;
-// 0x01      : memory check byte 1: 0xFF;
-// 0x02      : memory check byte 2: 0x55;
-// 0x03      : memory check byte 3: 0xAA;
-// 0x04-0x06 : event address
-// 0x07-0x08 : LCD brightness
-// 0x09-0x0A : LCD contrast
-// 0x0B-0xC2 : filter wheel setting
+// 0x000      : memory check byte 0: 0x00;
+// 0x001      : memory check byte 1: 0xFF;
+// 0x002      : memory check byte 2: 0x55;
+// 0x003      : memory check byte 3: 0xAA;
+// 0x004-0x006 : event address
+// 0x007-0x008 : LCD brightness
+// 0x009-0x00A : LCD contrast
+// 0x00B-0x114 : filter wheel setting
+// 0x115-0x11B : pump Name and S/N
 
 void initNVRAM(void)
 {
@@ -104,7 +111,8 @@ void initNVRAM(void)
   {
     // If the NVRAM does not have the first four bytes correct
     // suspect a power down and a failure
-    err |= B100;
+    err |= 0b00000100;
+    ev2 |= 0b01000000;
     // Set the first four bytes to the correct value for next time
     NVbuffer[0] = 0x00;
     NVbuffer[1] = 0xFF;
@@ -246,7 +254,7 @@ void callEvent(void)
   // Next four bytes are the milliseconds since last reset
   curtime = millis();
   Evector[8] = (byte) ((curtime >> 24) & 0xFF);
-  Evector[9] = (byte) ((curtime >> 26) & 0xFF);
+  Evector[9] = (byte) ((curtime >> 16) & 0xFF);
   Evector[10] = (byte) ((curtime >> 8) & 0xFF);;
   Evector[11] = (byte) (curtime & 0xFF);
 
@@ -263,6 +271,10 @@ void callEvent(void)
   SPI.transfer(4, Evector[23]);
   Eaddr = Eaddr + 0x18;    // Increment by 24 (DEC) or 0x18 (HEX)
   Ecount = Ecount + 1;
+
+  // Reset immediate event vector to 0
+  ev1 = 0x00;
+  ev2 = 0x00;
 
   // Check and display how full the RAM is
   loadLCDdata(79, RAMfill[Eaddr / oneNinth]);
