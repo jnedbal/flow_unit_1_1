@@ -1,3 +1,5 @@
+#define pumpAddress 0x0B
+
 void checkSum(void)
 {
   /* Checksum from
@@ -363,7 +365,13 @@ void filterGoto(void)
   // serialbuffer[2]:    which wheel is used
   // serialbuffer[3-4]:  which position to go to, consists of a 16bit number between 700 and 2300
   // Go to the position
+  // Switch on the servo only temporarily to prevent jumping of the servo
+  //if (!servos[serialbuffer[2]].attached())
+  {
+    //servos[serialbuffer[2]].attach(servoAddress[serialbuffer[2]]);
+  }
   servos[serialbuffer[2]].writeMicroseconds(word(serialbuffer[3], serialbuffer[4]));
+
 
   // Delete filter position name from the LCD
   for (i = 0; i < filterNameMaxChar[serialbuffer[2]]; i++)
@@ -390,7 +398,9 @@ void filterGoto(void)
     fw34 = (filterActive[2] | (filterActive[3] << 4));
   }
   callEvent();
-  
+
+  //delay(1000);
+  //servos[serialbuffer[2]].detach();
   // Return checksum and reset serial transfer
   checkSum();
   Sin = 0;
@@ -434,7 +444,7 @@ void transferEvents(void)
 // Function to send all events in the NVRAM
 void wipeEvents(void)
 {
-  // Reset the Ecount iindex and the event memory
+  // Reset the Ecount index and the event memory
   // Event counter
   Ecount = 0;
   // Event address
@@ -467,7 +477,7 @@ void pumpID(void)
   {
     NVbuffer[i] = serialbuffer[i + 2];
   }
-  storeConstant(0x00, 0x01, 0x15, 0x07);
+  storeConstant(0x00, 0x00, pumpAddress, 0x07);
   // Create a pump event
   ev2 |= 0b00000100;
   callEvent();

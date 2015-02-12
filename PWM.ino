@@ -18,7 +18,10 @@ void initPWM(void)
   // out for this!
   pwm.begin();
   // This is the maximum PWM frequency
-  pwm.setPWMFreq(1600);
+  pwm.setPWMFreq(100);
+  //pwm.setPWM(6, 0, 600);
+  //pwm.setPWM(5, 0, 600);
+  
   // Check if we have NVRAM error
   if ((err >> 2) & 0x01)
   {

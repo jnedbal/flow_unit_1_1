@@ -120,7 +120,7 @@ byte packetIn = 0;
 // Filter position variables
 // *************************
 // Filter wheel address 
-uint16_t servoAddress[4];
+byte servoAddress[4];
 // Number of active filter wheels
 byte servoCount;
 // Active filter wheels
@@ -149,6 +149,12 @@ byte filterActive[4];
 byte filterDefault[4];
 // Filter position name LCD cursor position
 byte filterNameLCD[4];
+
+// **************
+// Time variables
+// **************
+uint32_t oldtime;
+uint32_t olddate;
 
 /********************/
 /* Define constants */
@@ -186,7 +192,7 @@ void setup()
   // Initialize the PWM
   initPWM();
   // Attach an interrupt updating the clock
-  Timer1.attachInterrupt(printTime).setFrequency(1).start();
+  Timer1.attachInterrupt(printTime).setFrequency(50).start();
   // Set the servos
   initServo();
   // Call reset event

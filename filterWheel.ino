@@ -4,14 +4,22 @@
 // NVRAM to operate the servos correctly, control the servos and
 // display the information on the LCD.
 
+#define servoSetAddress 0x80
+#define servoLUTaddress 0x9A
+
 // Initialize the servos
 void initServo(void)
 {
-  // Attach the servos running the filter wheels
-  for (i = 0; i < servoCount; i++)
+  // Make sure there is no NVRAM error, otherwise, the function will hang
+  if (err == 0b00000100)
   {
-    servos[i].attach(servoAddress[i]);
+    return;
   }
+//  // Attach the servos running the filter wheels
+//  for (i = 0; i < servoCount; i++)
+//  {
+//    servos[i].attach(servoAddress[i]);
+//  }
   // Load the servos
   servoSetting();
 
@@ -23,8 +31,8 @@ void servoSetting(void)
   byte j = 0;
   // First we need to get information from the NVRAM. The NVRAM buffer is only
   // 256 bytes long, so we get it in two chunks.
-  // The first 26 (0x1A) bytes starting at address 11 (0x0B)
-  retrieveConstant(0x00, 0x00, 0x0B, 0x1A);
+  // The first 26 (0x1A) bytes starting at (servoSetAddress) address 128 (0x80)
+  retrieveConstant(0x00, 0x00, servoSetAddress, 0x1A);
 
   // Start processing the data in the NVbuffer
 
@@ -48,7 +56,7 @@ void servoSetting(void)
   
   // Record the event
 
-
+//
 //  Serial.print("Active servo: ");
 //  Serial.println(servoActive[0], DEC);
 //  Serial.print("Active servo: ");
@@ -59,7 +67,9 @@ void servoSetting(void)
 //  Serial.println(servoActive[3], DEC);
 //  Serial.print("Number of active servos: ");
 //  Serial.println(servoCount, DEC);
-
+//
+//  Serial.println("Servos attached.");
+//return;
   // Two bytes for number of filter positions of filter wheels
   // BBBBAAAA, where BBBB is number of positions in wheel 2 and AAAA is number
   // of positions in wheel 1, DDDDCCCC, where DDDD is number of positions in
@@ -153,6 +163,21 @@ void servoSetting(void)
 //    Serial.println(filterDefault[i], DEC);
   }
 
+  
+  // Make sure all servos are detached
+  for (i = 0; i < 4; i++)
+  {
+    if (servos[i].attached())
+    {
+      servos[i].detach();
+    }
+  }
+
+  // Attach the new servos
+  for (i = 0; i < servoCount; i++)
+  {
+    servos[i].attach(servoAddress[i]);
+  }
 
   // 240 bytes of up to fourty filter positions and their names
   // Each filter position comes with 4 bytes. 
@@ -164,10 +189,10 @@ void servoSetting(void)
   // byte 4:   second character of the filter position name
   // byte 5:   7 MSBs of 15-bit RGB code
   // byte 6:   8 LSBs of 15-bit RGB code
-  //   bytes 27-266    filter positions and their names
+  //   bytes 154-393    filter positions and their names
   
-  // The remaining 240 (0xF0) bytes starting at address 37 (0x25)
-  retrieveConstant(0x00, 0x00, 0x25, 0xF0);
+  // The remaining 240 (0xF0) bytes starting at address 154 (0x9A) (26+128)
+  retrieveConstant(0x00, 0x00, servoLUTaddress, 0xF0);
 
   for (i = 0; i < servoCount; i++)
   {
@@ -286,7 +311,16 @@ void servoSetting(void)
   fw34 = (filterActive[2] | (filterActive[3] << 4));
   callEvent();
 
+  // Make sure all servos are detached
+  //delay(1000);
+  for (i = 0; i < 4; i++)
+  {
+    if (servos[i].attached())
+    {
+      //servos[i].detach();
+    }
+  }
   // Display the buffer onto the LCD
-  updateLCD();
+  //updateLCD();
 }
 

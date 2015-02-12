@@ -58,22 +58,31 @@ void printTime(void)
 {
   //lcd.setCursor(0, 0);
   uint32_t curtime = rtc_clock.current_time();
-  //lcd.print((curtime >> 20) & B11);
-  loadLCDdata(0, HEXASCII[(curtime >> 20) & B11]);
-  //lcd.print((curtime >> 16) & B1111);
-  loadLCDdata(1, HEXASCII[(curtime >> 16) & B1111]);
-  //lcd.print(":");
-  //lcd.print((curtime >> 12) & B111);
-  loadLCDdata(3, HEXASCII[(curtime >> 12) & B111]);
-  //lcd.print((curtime >> 8) & B1111);
+  if (curtime == oldtime)
+  {
+    updateLCD();
+    return;
+  }
+  oldtime = curtime;
+  // Seconds
+  loadLCDdata(0, HEXASCII[(curtime >> 20) & 0b11]);
+  // Tens of seconds
+  loadLCDdata(1, HEXASCII[(curtime >> 16) & 0b1111]);
+  // Minutes
+  loadLCDdata(3, HEXASCII[(curtime >> 12) & 0b111]);
+  // Tens of minutes
   loadLCDdata(4, HEXASCII[(curtime >> 8) & B1111]);
-  //lcd.print(":");
-  //lcd.print((curtime >> 4) & B111);
+  // Hours
   loadLCDdata(6, HEXASCII[(curtime >> 4) & B111]);
-  //lcd.print((curtime) & B1111);
+  // Tens of hours
   loadLCDdata(7, HEXASCII[(curtime) & B1111]);
   //lcd.print(" ");
   uint32_t curdate = rtc_clock.current_date();
+  if (curdate == olddate)
+  {
+    return;
+  }
+  olddate = curdate;
   //lcd.print((curdate >> 28) & B11);
   loadLCDdata(9, HEXASCII[(curdate >> 28) & B11]);
   //lcd.print((curdate >> 24) & B1111);
@@ -91,25 +100,30 @@ void printTime(void)
 
   //lcd.setCursor(0, 0);
   //lcd.print(LCD0);
-  updateLCD();
+  
 
 }
 
 void updateLCD(void)
 {
-  while (LCDindex > 0)
+  if (LCDindex == 0)
   {
-    byte tmpIn = LCDindex - 1;
-    lcd.setCursor(LCDnew[tmpIn] % 20, LCDnew[tmpIn] / 20);
-    lcd.write(LCDdata[LCDnew[tmpIn]]);
-    LCDindex--;
+    return;
   }
+  byte tmpIn = LCDindex - 1;
+  lcd.setCursor(LCDnew[tmpIn] % 20, LCDnew[tmpIn] / 20);
+  lcd.write(LCDdata[LCDnew[tmpIn]]);
+  LCDindex--;
 }
 
 // Function updates LCDdata register, LCDnew
 // register and increments LCDindex
 void loadLCDdata(byte index, byte data)
 {
+//  if (LCDdata[index] == data)
+//  {
+//    return;
+//  }
   LCDdata[index] = data;
   LCDnew[LCDindex] = index;
   LCDindex++;
