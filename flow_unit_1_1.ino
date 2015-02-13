@@ -191,6 +191,8 @@ void setup()
   //testNVRAM();
   // Initialize the PWM
   initPWM();
+  // Set 12 MHz clock for USB
+  init12MHz();
   // Attach an interrupt updating the clock
   Timer1.attachInterrupt(printTime).setFrequency(50).start();
   // Set the servos

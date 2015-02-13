@@ -305,7 +305,8 @@ void filterSet(void)
   // serialbuffer[2]:  which wheel is used
   // serialbuffer[3]:  which position to go to
   // Go to the position
-  servos[serialbuffer[2]].writeMicroseconds(filterPosition[serialbuffer[2]][serialbuffer[3] - 1]);
+  //servos[serialbuffer[2]].writeMicroseconds(filterPosition[serialbuffer[2]][serialbuffer[3] - 1]);
+  moveServo(servoAddress[serialbuffer[2]], filterPosition[serialbuffer[2]][serialbuffer[3] - 1]);
   for (i = 0; i < filterNameMaxChar[serialbuffer[2]]; i++)
   {
     // Print characters on LCD
@@ -370,8 +371,8 @@ void filterGoto(void)
   {
     //servos[serialbuffer[2]].attach(servoAddress[serialbuffer[2]]);
   }
-  servos[serialbuffer[2]].writeMicroseconds(word(serialbuffer[3], serialbuffer[4]));
-
+  //servos[serialbuffer[2]].writeMicroseconds(word(serialbuffer[3], serialbuffer[4]));
+  moveServo(servoAddress[serialbuffer[2]], word(serialbuffer[3], serialbuffer[4]));
 
   // Delete filter position name from the LCD
   for (i = 0; i < filterNameMaxChar[serialbuffer[2]]; i++)
@@ -481,6 +482,17 @@ void pumpID(void)
   // Create a pump event
   ev2 |= 0b00000100;
   callEvent();
+  // Display 'p=' on the screen
+  loadLCDdata(40, 112);
+  loadLCDdata(41, 61);
+  // Display '000' on the screen
+  loadLCDdata(42, 48);
+  loadLCDdata(43, 48);
+  loadLCDdata(44, 48);
+  // Display 'mb' on the screen
+  loadLCDdata(45, 109);
+  loadLCDdata(46, 98);
+
   // Return checksum and reset serial transfer
   checkSum();
   Sin = 0;
@@ -495,6 +507,12 @@ void pumpPressure(void)
   fp1 = serialbuffer[2];
   fp2 = serialbuffer[3];
   callEvent();
+  uint16_t intNumber = word(serialbuffer[2], serialbuffer[3]);
+  for (i = 0; i < 3; i++)
+  {
+    loadLCDdata(44 - i, HEXASCII[intNumber % 10]);
+    intNumber /= 10;
+  }
   // Return checksum and reset serial transfer
   checkSum();
   Sin = 0;

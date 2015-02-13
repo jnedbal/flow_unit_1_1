@@ -97,7 +97,7 @@ void servoSetting(void)
     //   byte 6      filter wheel 3 address LSB
     //   byte 7      filter wheel 4 address MSB
     //   byte 8      filter wheel 4 address LSB
-    servoAddress[i] = word(NVbuffer[servoActive[i] * 2], NVbuffer[servoActive[i] * 2 + 1]);
+    servoAddress[i] = NVbuffer[servoActive[i]];
 //    Serial.print("Filter address ");
 //    Serial.print(servoActive[i] + 1, DEC);
 //    Serial.print(": ");
@@ -165,19 +165,19 @@ void servoSetting(void)
 
   
   // Make sure all servos are detached
-  for (i = 0; i < 4; i++)
-  {
-    if (servos[i].attached())
-    {
-      servos[i].detach();
-    }
-  }
-
-  // Attach the new servos
-  for (i = 0; i < servoCount; i++)
-  {
-    servos[i].attach(servoAddress[i]);
-  }
+//  for (i = 0; i < 4; i++)
+//  {
+//    if (servos[i].attached())
+//    {
+//      servos[i].detach();
+//    }
+//  }
+//
+//  // Attach the new servos
+//  for (i = 0; i < servoCount; i++)
+//  {
+//    servos[i].attach(servoAddress[i]);
+//  }
 
   // 240 bytes of up to fourty filter positions and their names
   // Each filter position comes with 4 bytes. 
@@ -287,7 +287,8 @@ void servoSetting(void)
     if (filterDefault[i] > 0)
     {
       // Move filter wheel to the default position
-      servos[i].writeMicroseconds(filterPosition[i][filterDefault[i] - 1]);
+      moveServo(servoAddress[i], filterPosition[i][filterDefault[i] - 1]);
+      //servos[i].writeMicroseconds(filterPosition[i][filterDefault[i] - 1]);
       for (j = 0; j < filterNameMaxChar[i]; j++)
       {
         // Print characters on LCD
@@ -311,16 +312,11 @@ void servoSetting(void)
   fw34 = (filterActive[2] | (filterActive[3] << 4));
   callEvent();
 
-  // Make sure all servos are detached
-  //delay(1000);
-  for (i = 0; i < 4; i++)
-  {
-    if (servos[i].attached())
-    {
-      //servos[i].detach();
-    }
-  }
   // Display the buffer onto the LCD
   //updateLCD();
 }
 
+void moveServo(uint16_t address, uint16_t angle)
+{
+  pwm.setPWM(address, 0, angle);
+}
