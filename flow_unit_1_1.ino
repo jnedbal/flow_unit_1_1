@@ -43,6 +43,12 @@
 // Dividing factor for one ninth of the RAM full
 #define oneNinth 0x38E4
 
+// I2C address
+//    Make sure this address is unique on the I2C bus and identical in the stirrer
+#define SlaveDeviceId 9
+// Number of bytes in I2C transfer to stirrer
+#define lengthI2Cbuf 14
+
 /************************/
 /* Initialize libraries */
 /************************/
@@ -150,6 +156,11 @@ byte filterDefault[4];
 // Filter position name LCD cursor position
 byte filterNameLCD[4];
 
+// *************************
+// Filter position variables
+// *************************
+byte readI2Cbuf[lengthI2Cbuf];
+
 // **************
 // Time variables
 // **************
@@ -197,6 +208,8 @@ void setup()
   Timer1.attachInterrupt(printTime).setFrequency(50).start();
   // Set the servos
   initServo();
+  // Initialize the stirrer
+  readFromStirrer();
   // Call reset event
   ev2 |= 0b10000000;
   callEvent();

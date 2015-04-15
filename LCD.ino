@@ -49,7 +49,14 @@ void initLCD(void)
   loadLCDdata(5, 58);   // Add a colon between minute and second
   loadLCDdata(11, 47);  // Add a slash between day and month
   loadLCDdata(14, 47);  // Add a slash between month and year
-  
+  loadLCDdata(40, 83);  // Add an "S" for (S)tir
+  loadLCDdata(41, 116); // Add an "t" for S(t)ir
+  loadLCDdata(42, 105); // Add an "i" for St(i)r
+  loadLCDdata(43, 114); // Add an "r" for Sti(r)
+  //loadLCDdata(45, 78);  // Add an "N" for (N)/A
+  //loadLCDdata(46, 47);  // Add an "/" for N(/)A
+  //loadLCDdata(47, 65);  // Add an "A" for N/(A)
+
   // set up the LCD's number of columns and rows: 
   lcd.begin(20, 4);
 }

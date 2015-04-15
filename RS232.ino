@@ -362,8 +362,8 @@ void filterSet(void)
 void filterUpdate(void)
 {
   servoSetting();
-  // Updated filter look up table
-  ev1 = (ev1 & 0b11110000) | NVbuffer[8];
+  // Update filter look up table
+  ev1 = ((ev1 & 0b11110000) | NVbuffer[8]);
   // Return checksum and reset serial transfer
   checkSum();
   Sin = 0;

@@ -10,7 +10,7 @@
 //  7: reserved
 //  6: reserved
 //  5: reserved
-//  4: reserved
+//  4: updated stirrer
 //  3: updated servo 1 (filter wheel 1) look-up table
 //  2: updated servo 2 (filter wheel 2) look-up table
 //  1: updated servo 3 look-up table
@@ -37,7 +37,7 @@
 //  7:  reserved
 //  6:  reserved
 //  5:  reserved
-//  4:  reserved
+//  4:  Stirrer not responding
 //  3:  Don't know which filter is in position
 //  2:  NVRAM does not hold expected values in first four bytes,
 //            suspected loss of power. All settings and logs lost.
@@ -68,8 +68,8 @@
 //  5:  shutter 3 ON
 //  4:  shutter 2 ON
 //  3:  shutter 1 ON
-//  2:  reserved
-//  1:  reserved
+//  2:  stirrer A    (AB=00 : off, AB=01 : on, AB = 10 : periodic)
+//  1:  stirrer B
 //  0:  reserved
 // Bytes 19 & 20 are pump pressure
 // Byte 19

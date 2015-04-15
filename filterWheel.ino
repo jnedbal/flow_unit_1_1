@@ -11,7 +11,7 @@
 void initServo(void)
 {
   // Make sure there is no NVRAM error, otherwise, the function will hang
-  if (err == 0b00000100)
+  if (bitRead(err, 2))
   {
     return;
   }

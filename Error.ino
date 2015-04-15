@@ -16,6 +16,8 @@
 //            first four bytes, suspected loss of 
 //            power supply. All settings and logs lost.
 // 00001000:  Don't know which filter is in position
+// 00010000:  Stirrer does not respond
+
 
 void initError(void)
 {
