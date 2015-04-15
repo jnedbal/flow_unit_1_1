@@ -127,6 +127,16 @@ void rs232loop(void)
         pumpPressure();
         break;
 
+      /* if the command is s (115 in ASCII) for (s)tirrer */
+      case 115:
+        setStirrer();
+        break;
+
+      /* if the command is t (116 in ASCII) for s(t)irrer */
+      case 116:
+        getStirrer();
+        break;
+
     }
   }
 }
